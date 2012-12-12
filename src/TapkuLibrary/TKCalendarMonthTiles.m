@@ -32,6 +32,7 @@
 @property (nonatomic, strong, readonly) UILabel *currentDay;
 
 @property (nonatomic, strong) NSArray *tiles;
+@property (nonatomic, strong) NSArray *accessibleElements;
 
 @end
 
@@ -108,6 +109,15 @@
 
     for (TKCalendarMonthTilesTile *tile in self.tiles)
         tile.selectable = [self.delegate calendarMonthTiles:self canSelectDate:tile.date];
+    
+    // The accessible elements depends on the selected tiles: clear the cache so they can be
+    // regenerated with the updated selectable values
+    _accessibleElements = nil;
+}
+
+- (CGRect) rectForTile:(TKCalendarMonthTilesTile*)tile
+{
+    return CGRectMake(tile.column * 46, tile.row * 44, 46, 44);
 }
 
 - (void)drawTileInRect:(CGRect)rect day:(int)day font:(UIFont *)font color:(UIColor *)color {
@@ -134,7 +144,9 @@
 
     for (TKCalendarMonthTilesTile *dayTile in self.tiles) {
         NSInteger day = [calendar components:NSDayCalendarUnit fromDate:dayTile.date].day;
-        CGRect dayRect = CGRectMake(dayTile.column * 46, dayTile.row * 44 + 6, 47, 45);
+        CGRect tileRect = [self rectForTile:dayTile];
+        CGRect dayRect = CGRectMake(tileRect.origin.x, tileRect.origin.y + 6,
+                                    tileRect.size.width + 1, tileRect.size.height +1);
 
         UIColor *color = ([[dayTile.date monthDate] isEqualToDate:self.monthDate]
                           ? [UIColor colorWithRed:0.224 green:0.278 blue:0.337 alpha:1.000]
@@ -269,6 +281,82 @@
         [self addSubview:_selectedImageView];
 	}
 	return _selectedImageView;
+}
+
+- (void) setSelectedTile:(TKCalendarMonthTilesTile *)selectedTile {
+    _selectedTile = selectedTile;
+    
+    // The accessibilityFrame depends on the selected tile: clear the accessibility cache on selected tile change
+    _accessibleElements = nil;
+}
+
+#pragma mark Accessibility
+
+- (void) didMoveToWindow
+{
+    // The accessibilityFrame depends on the window coordinates: clear the accessibility cache on window change
+    _accessibleElements = nil;
+}
+
+- (UIAccessibilityElement *)accessibilityElementForTile:(TKCalendarMonthTilesTile *)tile {
+    if (!tile.selectable)
+        return nil;
+    
+    static NSDateFormatter *localizedDateFormatter;
+    static NSDateFormatter *machineReadableDateFormatter;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        localizedDateFormatter = [[NSDateFormatter alloc] init];
+        localizedDateFormatter.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"EEEEdMMMM" options:0 locale:[NSLocale currentLocale]];
+        
+        machineReadableDateFormatter = [[NSDateFormatter alloc] init];
+        machineReadableDateFormatter.dateFormat = @"yyyy-MM-dd";
+    });
+    
+    UIAccessibilityElement *accessibleTile = [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
+    
+    accessibleTile.isAccessibilityElement = YES;
+    accessibleTile.accessibilityFrame = [self convertRect:[self rectForTile:tile] toView:nil];
+    accessibleTile.accessibilityLabel = [localizedDateFormatter stringFromDate:tile.date];
+    accessibleTile.accessibilityIdentifier = [machineReadableDateFormatter stringFromDate:tile.date];
+    accessibleTile.accessibilityTraits = UIAccessibilityTraitButton;
+    if ([tile isEqual:self.selectedTile])
+        accessibleTile.accessibilityTraits |= UIAccessibilityTraitSelected;
+    
+    return accessibleTile;
+}
+
+- (NSArray *)accessibleElements {
+    if ( _accessibleElements == nil ) {
+        
+        NSMutableArray *accessibleElements = [NSMutableArray arrayWithCapacity:[self.tiles count]];
+        for (TKCalendarMonthTilesTile *tile in self.tiles) {
+            UIAccessibilityElement *accessibleTile = [self accessibilityElementForTile:tile];
+            if (accessibleTile)
+                [accessibleElements addObject:accessibleTile];
+        }
+        
+        _accessibleElements = accessibleElements;
+    }
+    
+    return _accessibleElements;
+}
+
+- (BOOL)isAccessibilityElement {
+    // The container itself is not accessible; it merely returns accessibility elements for its items
+    return NO;
+}
+
+- (NSInteger)accessibilityElementCount {
+    return [[self accessibleElements] count];
+}
+
+- (id)accessibilityElementAtIndex:(NSInteger)index {
+    return [[self accessibleElements] objectAtIndex:index];
+}
+
+- (NSInteger)indexOfAccessibilityElement:(id)element {
+    return [[self accessibleElements] indexOfObject:element];
 }
 
 @end

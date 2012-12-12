@@ -59,7 +59,6 @@
     UILabel *label = [[UILabel alloc] init];
 
     label.text = text;
-    label.accessibilityLabel = accessibilityLabel;
   	label.textAlignment = NSTextAlignmentCenter;
   	label.shadowColor = [UIColor whiteColor];
   	label.shadowOffset = CGSizeMake(0, 1);
@@ -67,6 +66,9 @@
   	label.backgroundColor = [UIColor clearColor];
   	label.textColor = [UIColor colorWithRed:59/255. green:73/255. blue:88/255. alpha:1];
 
+    label.accessibilityLabel = accessibilityLabel;
+    label.isAccessibilityElement = NO; // the day of the week is accessibily reported for each tile:
+                                       // the column labels are no use for accessibility
     return label;
 }
 
