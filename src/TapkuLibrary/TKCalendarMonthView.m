@@ -92,14 +92,14 @@
    	[self addSubview:self.monthYear];
 
     self.rightArrow = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.rightArrow.accessibilityLabel = @"Next Month";
+    self.rightArrow.accessibilityLabel = NSLocalizedString(@"Next Month", @"Accessibility text for a button that displays the next month in a calendar");
     [self.rightArrow setImage:[UIImage imageNamedTK:@"TapkuLibrary.bundle/Images/calendar/Month Calendar Right Arrow"] forState:UIControlStateNormal];
     [self.rightArrow addTarget:self action:@selector(nextMonthPressed) forControlEvents:UIControlEventTouchUpInside];
     self.rightArrow.frame = CGRectMake(320-45, 0, 48, 38);
     [self addSubview:self.rightArrow];
 
     self.leftArrow = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.leftArrow.accessibilityLabel = @"Previous Month";
+    self.leftArrow.accessibilityLabel = NSLocalizedString(@"Previous Month", @"Accessibility text for a button that displays the previous month in a calendar");
     [self.leftArrow setImage:[UIImage imageNamedTK:@"TapkuLibrary.bundle/Images/calendar/Month Calendar Left Arrow"] forState:UIControlStateNormal];
     [self.leftArrow addTarget:self action:@selector(previousMonthPressed) forControlEvents:UIControlEventTouchUpInside];
   	self.leftArrow.frame = CGRectMake(0, 0, 48, 38);
