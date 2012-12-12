@@ -175,8 +175,8 @@
     self.currentDay.text = [NSString stringWithFormat:@"%d", [calendar components:NSDayCalendarUnit fromDate:date].day];
 
 	CGRect r = self.selectedImageView.frame;
-	r.origin.x = (tile.column * 46);
-	r.origin.y = (tile.row    * 44) - 1;
+	r.origin.x =  (float)(tile.column * 46);
+	r.origin.y = ((float)(tile.row    * 44)) - 1;
 	self.selectedImageView.frame = r;
 }
 
