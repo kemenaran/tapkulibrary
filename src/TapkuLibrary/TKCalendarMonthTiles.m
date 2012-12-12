@@ -177,6 +177,8 @@
     }
 
     if (tile == nil) return;
+    
+    self.selectedTile = tile;
 
     if ([date isSameDay:[NSDate date]])
 		self.selectedImageView.image = [UIImage imageWithContentsOfFile:TODAY_SELECTED_TILE];
